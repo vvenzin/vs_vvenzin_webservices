@@ -101,22 +101,6 @@ public class ServerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {return mMessenger.getBinder();}
 
-    /*private synchronized void startServer()
-    {
-        if (serverThread == null) {
-            serverThread = new Thread(thread);
-            serverThread.start();
-        }
-    }
-
-    private synchronized void stopServer()
-    {
-        if (serverThread != null) {
-            Thread t = serverThread;
-            serverThread = null;
-            t.interrupt();
-        }
-    }*/
 
     private synchronized void startSopServer(boolean startStop)
     {
