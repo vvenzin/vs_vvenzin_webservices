@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ch.ethz.inf.vs.vs_vvenzin_webservices" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|keyboard|orientation"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".RESTServerActivity"
+            android:configChanges="keyboardHidden|keyboard|orientation"
+            android:label="@string/title_activity_restserver" >
+>
+        </activity>
+
+        <service
+            android:name=".ServerService"
+            android:exported="false">
+        </service>
+    </application>
+
+</manifest>
+
+<!--
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <application>
+        <service android:name="ch.ethz.inf.vs.vs_vvenzin_webservices.ServerService"
+            android:exported="true"
+            android:enabled="true" >
+        </service>
+    </application>
+
+</manifest>
+-->

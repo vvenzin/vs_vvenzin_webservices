@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">vs-vvenzin-webservices</string>
+
+
+    <!-- MainActivity -->
+    <string name="action_settings">Settings</string>
+    <string name="btn_task1">REST client</string>
+    <string name="btn_task2">WS client</string>
+    <string name="btn_task3">REST server</string>
+    <string name="title_activity_restserver">RESTServerActivity</string>
+
+    <!-- RESTServerActivity -->
+    <string name="ip_port_tag">IP:PORT</string>
+    <string name="ip_port_value">--</string>
+    <string name="start_server">Start Server</string>
+    <string name="stop_server">Stop Server</string>
+
+</resources>
