@@ -46,12 +46,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         switch (b.getId()) {
             case R.id.btn_task1:
+                Intent i0 = new Intent(this, RESTClientActivity.class);
+                this.startActivity(i0);
                 break;
             case R.id.btn_task2:
                 break;
             case R.id.btn_task3:
-                Intent i = new Intent(getApplicationContext(), RESTServerActivity.class);
-                startActivity(i);
+                Intent i2 = new Intent(getApplicationContext(), RESTServerActivity.class);
+                startActivity(i2);
                 break;
         }
     }

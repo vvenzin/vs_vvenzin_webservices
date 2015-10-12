@@ -28,13 +28,20 @@
 
         <service
             android:name=".ServerService"
-            android:exported="false">
+            android:exported="false" >
         </service>
+
+        <activity
+            android:name=".RESTClientActivity"
+            android:label="@string/title_activity_restclient"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ch.ethz.inf.vs.vs_vvenzin_webservices.MainActivity" />
+        </activity>
     </application>
 
-</manifest>
-
-<!--
+</manifest><!--
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <application>
