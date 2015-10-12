@@ -1,5 +1,7 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.SyncStateContract;
 import android.util.Log;
 
 import java.io.IOException;
@@ -22,6 +25,8 @@ import java.util.Enumeration;
 import java.util.List;
 
 public class ServerService extends Service {
+
+    private final String LOGTAG = "## VV-ServerService ##";
 
     private ServerSocket serverSocket;
     private Thread serverThread;
@@ -45,7 +50,7 @@ public class ServerService extends Service {
                     mClients.remove(msg.replyTo); // Remove caller
                     break;
                 case MSG_START_STOP_SERVER:
-                    startSopServer(msg.arg1 == 1);
+                    if (msg.arg1 > -1) startSopServer(msg.arg1 == 1);
                     if (msg.arg2 == 1) sendServerState();
                     break;
                 default:
@@ -71,7 +76,7 @@ public class ServerService extends Service {
     public void onCreate()
     {
         super.onCreate();
-        Log.d("#### VV ####", "ServerService - onCreate()");
+        Log.d(LOGTAG, "onCreate()");
 
         isRunning = true;
     }
@@ -79,8 +84,19 @@ public class ServerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.d("#### VV ####", "ServerService - onStartCommand()");
+        Log.d(LOGTAG, "onStartCommand()");
 
+        Intent i = new Intent(this, RESTServerActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pi=PendingIntent.getActivity(this, 0, i, 0);
+        Notification note = new Notification.Builder(getApplicationContext())
+                .setContentText("Test Notification")
+                .setContentIntent(pi)
+                .build();
+
+        note.flags|=Notification.FLAG_NO_CLEAR;
+
+        startForeground(1337, note);
         return START_STICKY;
     }
 
@@ -88,7 +104,8 @@ public class ServerService extends Service {
     public void onDestroy()
     {
         super.onDestroy();
-        Log.d("#### VV ####", "ServerService - onDestroy()");
+        Log.d(LOGTAG,"onDestroy()");
+        Log.d(LOGTAG, "onDestroy()");
         if (serverSocket != null) {
             try {
                 serverSocket.close();
@@ -101,24 +118,24 @@ public class ServerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {return mMessenger.getBinder();}
 
-
+    // Hello
     private synchronized void startSopServer(boolean startStop)
     {
         if (startStop) {
             if (serverThread == null) {
                 serverThread = new Thread(thread);
                 serverThread.start();
-                Log.d("#### VV ####", "Starting server");
+                Log.d(LOGTAG, "Starting server");
                 serverIsRunning = true;
-            } else Log.d("#### VV ####", "Server is already running");
+            } else Log.d(LOGTAG, "Server is already running");
         } else {
             if (serverThread != null) {
                 Thread t = serverThread;
                 serverThread = null;
                 t.interrupt();
-                Log.d("#### VV ####", "Stopping server");
+                Log.d(LOGTAG, "Stopping server");
                 serverIsRunning = false;
-            } else Log.d("#### VV ####", "Server is already stopped");
+            } else Log.d(LOGTAG, "Server is already stopped");
         }
     }
 
@@ -143,7 +160,7 @@ public class ServerService extends Service {
             try {
                 serverSocket = new ServerSocket(PORT);
                 mAddress = getWlanInterface();
-                Log.d("#### VV ####", "Address " + mAddress);
+                Log.d(LOGTAG, "Address " + mAddress);
                 sendIpAndPort();
 
                 while (true)
@@ -205,13 +222,15 @@ public class ServerService extends Service {
             {
                 if (interf != null && interf.getName().equals("wlan0")) wlanInterface = interf;
             }
-            for (Enumeration<InetAddress> enumIpAddr = wlanInterface.getInetAddresses();
-                 enumIpAddr.hasMoreElements(); ) {
-                InetAddress inetAddress = enumIpAddr.nextElement();
-                if (inetAddress.getAddress().length == 4) {
-                    return inetAddress.getHostAddress();
+            if (wlanInterface != null) {
+                for (Enumeration<InetAddress> enumIpAddr = wlanInterface.getInetAddresses();
+                     enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (inetAddress.getAddress().length == 4) {
+                        return inetAddress.getHostAddress();
+                    }
                 }
-            }
+            } else Log.d(LOGTAG,"Couldnt get wlan interface.");
         } catch (SocketException e) { e.printStackTrace();}
         return null;
     }

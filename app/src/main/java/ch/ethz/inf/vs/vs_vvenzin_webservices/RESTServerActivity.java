@@ -12,13 +12,13 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class RESTServerActivity extends AppCompatActivity {
+
+    private final String LOGTAG = "## VV-ServerActivity ##";
 
     Messenger mService = null;
     boolean mIsBound;
@@ -28,6 +28,9 @@ public class RESTServerActivity extends AppCompatActivity {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            /**
+             * All message handling goes in here
+             * */
             switch (msg.what) {
                 case ServerService.MSG_SET_IP_PORT:
                     Bundle b = msg.getData();
@@ -43,25 +46,7 @@ public class RESTServerActivity extends AppCompatActivity {
         }
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            Log.d("#### VV ####", "Service connected");
-            try {
-                Message msg = Message.obtain(null, ServerService.MSG_REGISTER_CLIENT);
-                msg.replyTo = mMessenger;
-                mService.send(msg);
-            }
-            catch (RemoteException e) {
-                // In this case the service has crashed before we could even do anything with it
-            }
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.d("#### VV ####", "Service unexpectedly disconnected");
-            mService = null;
-        }
-    };
+    private ServiceConnection mConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,33 +54,23 @@ public class RESTServerActivity extends AppCompatActivity {
         Log.d("#### VV ####", "RESTServerActivity - onCreate()");
         setContentView(R.layout.activity_restserver);
 
-        /*
-        Button sb = (Button) findViewById(R.id.start_service_button);
-        sb.setOnClickListener(this);
-        sb = (Button)findViewById(R.id.stop_service_button);
-        sb.setOnClickListener(this);
-        */
         tb = (ToggleButton) findViewById(R.id.start_stop_server);
         tb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                startStopServer(isChecked);
+                startStopServer(isChecked); // Start/Stop server
             }
         });
 
-
-        requestServerRunningStatus();
-
-        // Bind to existing service or create new one
-        Log.d("#### VV ####", "Service is already running " + Boolean.toString(ServerService.isRunning()));
-        bindServerService();
+        initConnection(); // Connection used for service
+        startServerService(); // Bind to existing service or create and start new one
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        Log.d("#### VV ####", "RESTServerActivity - onResume()");
+        Log.d(LOGTAG, "onResume()");
 
     }
 
@@ -103,7 +78,7 @@ public class RESTServerActivity extends AppCompatActivity {
     protected void onPause()
     {
         super.onPause();
-        Log.d("#### VV ####", "RESTServerActivity - onPause()");
+        Log.d(LOGTAG, "onPause()");
 
     }
 
@@ -111,27 +86,12 @@ public class RESTServerActivity extends AppCompatActivity {
     protected void onDestroy()
     {
         super.onDestroy();
-        Log.d("#### VV ####", "RESTServerActivity - onDestroy()");
-
+        Log.d(LOGTAG, "onDestroy()");
+        unbindServerService(); // This does NOT stop the service
     }
 
     @Override
-    public void onConfigurationChanged(Configuration conf)
-    {
-        super.onConfigurationChanged(conf);
-    }
-
-    /*
-    @Override
-    public void onClick(View v)
-    {
-        switch (v.getId())
-        {
-            case  R.id.start_stop_server:
-                tb.toggle();
-                break;
-        }
-    }*/
+    public void onConfigurationChanged(Configuration conf) {super.onConfigurationChanged(conf);}
 
     private void setIpAndPortView(String ip, int port)
     {
@@ -139,12 +99,16 @@ public class RESTServerActivity extends AppCompatActivity {
         ipPortTagValue.setText(ip + ":" + Integer.toString(port));
     }
 
-    // Bind to ServerService
-    private void bindServerService()
+    // Bind to ServerService and start if not already running
+    private void startServerService()
     {
         bindService(new Intent(this, ServerService.class), mConnection, getApplicationContext().BIND_AUTO_CREATE);
         mIsBound = true;
-        Log.d("#### VV ####", "Bind ServerService");
+        if (ServerService.isRunning()) Log.d(LOGTAG,"Server is already running - bind");
+        else {
+            startService(new Intent(this,ServerService.class));
+            Log.d(LOGTAG, "Service is not running yet bind and start");
+        }
     }
 
     // Unbind from ServerService
@@ -160,13 +124,13 @@ public class RESTServerActivity extends AppCompatActivity {
                 catch (RemoteException e) {e.printStackTrace();}
                 unbindService(mConnection);
                 mIsBound = false;
-                Log.d("#### VV ####", "Unbind ServerService");
+                Log.d(LOGTAG, "Unbind ServerService");
             }
         }
     }
 
-    // startStop == 1 to start sertver , startStop == 0 to start sertver
-    // Also requests information if server is running
+    // startStop == 1 to start server , startStop == 0 to start server
+    // Also atomatically requests information if server is running -> causes button update
     private void startStopServer(boolean startStop)
     {
         int s = 0;
@@ -181,11 +145,12 @@ public class RESTServerActivity extends AppCompatActivity {
         }
     }
 
+    // Causes button to update on response
     private void requestServerRunningStatus()
     {
         if (mIsBound && mService != null) {
             try {
-                Message msg = Message.obtain(null, ServerService.MSG_START_STOP_SERVER, 0, 1);
+                Message msg = Message.obtain(null, ServerService.MSG_START_STOP_SERVER, -1, 1);
                 msg.replyTo = mMessenger;
                 mService.send(msg);
             }
@@ -193,11 +158,35 @@ public class RESTServerActivity extends AppCompatActivity {
         }
     }
 
+    // Helper function
+    private void initConnection()
+    {
+        mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mService = new Messenger(service);
+            Log.d(LOGTAG, "Service connected");
+            try {
+                Message msg = Message.obtain(null, ServerService.MSG_REGISTER_CLIENT);
+                msg.replyTo = mMessenger;
+                mService.send(msg);
+            }
+            catch (RemoteException e) {e.printStackTrace();}
+            requestServerRunningStatus();
+        }
 
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d(LOGTAG, "Service unexpectedly disconnected");
+            mService = null;
+        }
+    };
+    }
+
+
+    /* TEMPLATE for sending messages
     private void sendMessageToService(int intvaluetosend) {
         if (mIsBound) {
             if (mService != null) {
-                /*
+
                 try {
 
                     Message msg = Message.obtain(null, ServerService.MSG_SET_INT_VALUE, intvaluetosend, 0);
@@ -205,9 +194,10 @@ public class RESTServerActivity extends AppCompatActivity {
                     mService.send(msg);
                 }
                 catch (RemoteException e) {
-                }*/
+                }
             }
         }
     }
+    */
 
 }
