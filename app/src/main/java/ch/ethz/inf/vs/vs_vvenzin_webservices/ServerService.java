@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.provider.SyncStateContract;
 import android.util.Log;
 
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class ServerService extends Service {
 
     private ServerSocket serverSocket;
     private Thread serverThread;
-    private String mAddress = "--";
+    private String mAddress;
     private static boolean isRunning = false;
     private boolean serverIsRunning = false;
     ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
@@ -127,6 +126,7 @@ public class ServerService extends Service {
                 serverThread.start();
                 Log.d(LOGTAG, "Starting server");
                 serverIsRunning = true;
+                sendIpAndPort(); // Tell app about ip and port
             } else Log.d(LOGTAG, "Server is already running");
         } else {
             if (serverThread != null) {
@@ -135,6 +135,11 @@ public class ServerService extends Service {
                 t.interrupt();
                 Log.d(LOGTAG, "Stopping server");
                 serverIsRunning = false;
+
+                // Close socket
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {e.printStackTrace();}
             } else Log.d(LOGTAG, "Server is already stopped");
         }
     }

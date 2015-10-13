@@ -4,13 +4,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -39,6 +39,7 @@ public class RESTServerActivity extends AppCompatActivity {
                 case ServerService.MSG_START_STOP_SERVER:
                     // Check if button is consistent with server state
                     if ((msg.arg1 == 1) != tb.isChecked()) tb.toggle();
+                    if (msg.arg1 == 0) setIpAndPortView(null,0); // Clear ip:port in UI
                     break;
                 default:
                     super.handleMessage(msg);
@@ -88,15 +89,19 @@ public class RESTServerActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(LOGTAG, "onDestroy()");
         unbindServerService(); // This does NOT stop the service
+        // Stop service if server not running
+        if(!tb.isChecked()) stopService(new Intent(this,ServerService.class));
     }
 
     @Override
     public void onConfigurationChanged(Configuration conf) {super.onConfigurationChanged(conf);}
 
+    // Displays ip address and port in UI. Sets default if ip == null
     private void setIpAndPortView(String ip, int port)
     {
         TextView ipPortTagValue = (TextView) findViewById(R.id.ip_port_value);
-        ipPortTagValue.setText(ip + ":" + Integer.toString(port));
+        if (ip != null)  ipPortTagValue.setText(ip + ":" + Integer.toString(port));
+        else ipPortTagValue.setText(getString(R.string.ip_port_value) + ":" + getString(R.string.ip_port_value));
     }
 
     // Bind to ServerService and start if not already running
@@ -129,7 +134,7 @@ public class RESTServerActivity extends AppCompatActivity {
         }
     }
 
-    // startStop == 1 to start server , startStop == 0 to start server
+    // startStop == 1 to start server , startStop == 0 to stop server
     // Also atomatically requests information if server is running -> causes button update
     private void startStopServer(boolean startStop)
     {
