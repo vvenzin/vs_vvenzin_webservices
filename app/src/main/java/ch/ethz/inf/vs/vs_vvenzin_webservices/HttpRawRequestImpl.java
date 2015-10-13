@@ -1,6 +1,10 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
-import java.lang.Override;import java.lang.String;import java.lang.StringBuilder;public class HttpRawRequestImpl implements HttpRawRequest {
+import java.lang.Override;
+import java.lang.String;
+import java.lang.StringBuilder;
+
+public class HttpRawRequestImpl implements HttpRawRequest {
 
     private String hostAddress, absPath;
     private int destPort;

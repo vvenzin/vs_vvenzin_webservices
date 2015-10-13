@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class RESTClientActivity extends AppCompatActivity {
+public class RESTClientActivity extends AppCompatActivity implements SensorListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,5 +33,15 @@ public class RESTClientActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onReceiveDouble(double value) {
+
+    }
+
+    @Override
+    public void onReceiveString(String message) {
+
     }
 }
