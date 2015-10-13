@@ -1,9 +1,5 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
-import android.renderscript.ScriptGroup;
-
-import org.apache.http.client.utils.HttpClientUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
