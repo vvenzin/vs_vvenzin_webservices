@@ -12,8 +12,22 @@ public class RawHttpSensor extends AbstractSensor {
     public double parseResponse(String response) {
         double temperature;
 
-        // Somehow get the temperature from the response
-        temperature = 0;
+        char[] resp;
+        char[] temp = new char[5];
+        resp = response.toCharArray();
+
+        int i;
+        for(i = 0; i < 5; i++) {
+            if(!(resp[985 + i] == '<')) {
+                temp[i] = resp[985 + i];
+            }
+        }
+
+        try {
+            temperature = Double.parseDouble(new String(temp));
+        } catch (NumberFormatException nfe) {
+             temperature = Double.NaN;
+        }
 
         return  temperature;
     }
