@@ -4,20 +4,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 public class RESTClientActivity extends AppCompatActivity implements SensorListener {
+
+    RawHttpSensor rawHttpSensor;
+    double currentTemperature;
+    String debug;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restclient);
+
+        rawHttpSensor = new RawHttpSensor();
+        rawHttpSensor.registerListener(this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_restclient, menu);
-        return true;
+        return false;
     }
 
     @Override
@@ -37,11 +46,37 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
 
     @Override
     public void onReceiveDouble(double value) {
-
+        currentTemperature = value;
+        TextView showTemperature = (TextView) findViewById(R.id.show_temperature);
+        showTemperature.setText(String.valueOf(currentTemperature));
     }
 
     @Override
     public void onReceiveString(String message) {
+        debug = message;
+        TextView debugMessage = (TextView) findViewById(R.id.debug_message);
+        debugMessage.setText(debug);
+    }
 
+    @Override
+    public void onPause() {
+        rawHttpSensor.unregisterListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+       rawHttpSensor.registerListener(this);
+       super.onResume();
+
+    }
+
+    public void onDestroy() {
+        rawHttpSensor.unregisterListener(this);
+        super.onDestroy();
+    }
+
+    public void onClickTemperature(View view) {
+        rawHttpSensor.getTemperature();
     }
 }

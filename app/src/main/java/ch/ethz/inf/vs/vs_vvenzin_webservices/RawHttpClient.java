@@ -11,9 +11,6 @@ import java.net.Socket;
 
 public class RawHttpClient implements SimpleHttpClient {
 
-    private String hostAddress;
-    private int destPort;
-
     /**
      * Execute the HTTP request and return the response
      * @param request HTTP request
@@ -22,13 +19,17 @@ public class RawHttpClient implements SimpleHttpClient {
     @Override
     public String execute(Object request) {
 
+        String hostAddress;
+        int destPort;
+
         Socket socket;
         OutputStream outputStream;
         InputStream inputStream;
 
         String response;
 
-        socket = null;
+        hostAddress = RemoteServerConfiguration.HOST;
+        destPort = RemoteServerConfiguration.REST_PORT;
         response = "";
 
         // Get the host address and the destination port from the request???
@@ -54,6 +55,6 @@ public class RawHttpClient implements SimpleHttpClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return response;
+        return "test";
     }
 }
