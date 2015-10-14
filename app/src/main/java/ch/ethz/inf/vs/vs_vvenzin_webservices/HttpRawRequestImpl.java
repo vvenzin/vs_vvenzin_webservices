@@ -29,9 +29,9 @@ public class HttpRawRequestImpl implements HttpRawRequest {
         String endOfLine = "\r\n";
 
         // Initial line: GET
-        sb.append("GET " + absPath + " Http/1.1" + endOfLine);
+        sb.append("GET " + absPath + " HTTP/1.1" + endOfLine);
         // Header line host to specify the domain name of the server
-        sb.append("Host: " + hostAddress + endOfLine);
+        sb.append("HOST: " + hostAddress + ": " + endOfLine);
         // Empty line to signal end of header
         sb.append(endOfLine);
 

@@ -1,18 +1,18 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.net.Socket;
 
 public class RawHttpClient implements SimpleHttpClient {
-
-    private String hostAddress;
-    private int destPort;
 
     /**
      * Execute the HTTP request and return the response
@@ -22,16 +22,18 @@ public class RawHttpClient implements SimpleHttpClient {
     @Override
     public String execute(Object request) {
 
+        // Declare locals;
+        String hostAddress;
+        int destPort;
         Socket socket;
         OutputStream outputStream;
         InputStream inputStream;
-
         String response;
-
-        socket = null;
-        response = "";
-
-        // Get the host address and the destination port from the request???
+        
+        // Initialize locals
+        hostAddress = RemoteServerConfiguration.HOST;
+        destPort = RemoteServerConfiguration.REST_PORT;
+        response = new String();
 
         try {
             // Initialize the socket and the streams
@@ -39,15 +41,24 @@ public class RawHttpClient implements SimpleHttpClient {
             outputStream = socket.getOutputStream();
             inputStream = socket.getInputStream();
 
-            // Wrap the socket output stream and write the request
+            // Wrap the  outputStream and write the request
             PrintWriter out = new PrintWriter(outputStream);
             out.print(request);
             out.flush();
 
-            byte[] b = new byte[1024];
-            inputStream.read(b);
-
-            response = new String(b);
+            // Get String from inputStream
+            char[] b = new char[4096];
+            final StringBuilder sb = new StringBuilder();
+            final Reader in = new InputStreamReader(inputStream, "UTF-8");
+            for(;;) {
+                int rsz = in.read(b, 0, b.length);
+                if(rsz < 0) {
+                    break;
+                }
+                sb.append(b, 0, rsz);
+            }
+            in.close();
+            response = sb.toString();
 
             socket.close();
 
