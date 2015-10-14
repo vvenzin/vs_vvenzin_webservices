@@ -7,13 +7,23 @@
     tools:context="ch.ethz.inf.vs.vs_vvenzin_webservices.RESTClientActivity"
     android:orientation="vertical">
 
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Temperature"
+        android:text="Get Temperature RAW"
         android:id="@+id/get_temperature"
         android:layout_gravity="center_horizontal"
-        android:onClick="onClickTemperature"
+        android:onClick="onClickTemperatureRaw"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Temperature LIB"
+        android:id="@+id/get_temperature_lib"
+        android:layout_gravity="center_horizontal"
+        android:onClick="onClickTemperatureLib"
         />
 
     <TextView

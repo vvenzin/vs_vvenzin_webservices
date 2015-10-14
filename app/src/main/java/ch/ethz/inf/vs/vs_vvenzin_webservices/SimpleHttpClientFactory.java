@@ -13,6 +13,6 @@ public abstract class SimpleHttpClientFactory {
     }
 
     public enum Type {
-        RAW, LIB;
+        RAW, LIB
     }
 }

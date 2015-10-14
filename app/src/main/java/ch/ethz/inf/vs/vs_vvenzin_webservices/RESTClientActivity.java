@@ -10,6 +10,7 @@ import android.widget.TextView;
 public class RESTClientActivity extends AppCompatActivity implements SensorListener {
 
     RawHttpSensor rawHttpSensor;
+    HtmlSensor htmlSensor;
     double currentTemperature;
     String debug;
 
@@ -20,6 +21,9 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
 
         rawHttpSensor = new RawHttpSensor();
         rawHttpSensor.registerListener(this);
+
+        htmlSensor = new HtmlSensor();
+        htmlSensor.registerListener(this);
     }
 
     @Override
@@ -61,22 +65,29 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
     @Override
     public void onPause() {
         rawHttpSensor.unregisterListener(this);
+        htmlSensor.unregisterListener(this);
         super.onPause();
     }
 
     @Override
     public void onResume() {
-       rawHttpSensor.registerListener(this);
-       super.onResume();
+        rawHttpSensor.registerListener(this);
+        htmlSensor.unregisterListener(this);
+        super.onResume();
 
     }
 
     public void onDestroy() {
         rawHttpSensor.unregisterListener(this);
+        htmlSensor.unregisterListener(this);
         super.onDestroy();
     }
 
-    public void onClickTemperature(View view) {
+    public void onClickTemperatureRaw(View view) {
         rawHttpSensor.getTemperature();
+    }
+
+    public void onClickTemperatureLib(View view) {
+        htmlSensor.getTemperature();
     }
 }
