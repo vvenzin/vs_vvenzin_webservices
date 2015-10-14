@@ -1,11 +1,13 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
-public class RawHttpSensor extends AbstractSensor {
+import org.apache.http.client.methods.HttpGet;
+
+public class HtmlSensor extends AbstractSensor {
 
     @Override
     protected void setHttpClient() {
-        this.httpClient = SimpleHttpClientFactory.getInstance(SimpleHttpClientFactory.Type.RAW);
-        this.setName("RawHttpClient");
+        this.httpClient = SimpleHttpClientFactory.getInstance(SimpleHttpClientFactory.Type.LIB);
+        this.setName("LibHttpClient");
     }
 
     @Override
@@ -26,7 +28,7 @@ public class RawHttpSensor extends AbstractSensor {
         try {
             temperature = Double.parseDouble(new String(temp));
         } catch (NumberFormatException nfe) {
-             temperature = Double.NaN;
+            temperature = Double.NaN;
         }
 
         return  temperature;
@@ -35,11 +37,8 @@ public class RawHttpSensor extends AbstractSensor {
     @Override
     public void getTemperature() throws NullPointerException {
         // Build up a request to get a response with the temperature
-        String request;
-        request = HttpRawRequestFactory.getInstance
-                (RemoteServerConfiguration.HOST, RemoteServerConfiguration.REST_PORT,
-                        "/sunspots/Spot1/sensors/temperature")
-                .generateRequest();
+
+        HttpGet request = new HttpGet(RemoteServerConfiguration.HOST /*+ "/sunspots/Spot1/sensors/temperature"*/);
 
         AsyncWorker worker = new AsyncWorker();
         worker.execute(request);
