@@ -1,8 +1,8 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
 import android.content.res.Configuration;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +13,7 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
 
     RawHttpSensor rawHttpSensor;
     HtmlSensor htmlSensor;
+    JsonSensor jsonSensor;
     double currentTemperature;
     String debug;
 
@@ -21,11 +22,14 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restclient);
 
-        rawHttpSensor = new RawHttpSensor();
+        rawHttpSensor = (RawHttpSensor) SensorFactory.getInstance(SensorFactory.Type.RAW_HTTP);
         rawHttpSensor.registerListener(this);
 
-        htmlSensor = new HtmlSensor();
+        htmlSensor = (HtmlSensor) SensorFactory.getInstance(SensorFactory.Type.HTML);
         htmlSensor.registerListener(this);
+
+        jsonSensor = (JsonSensor) SensorFactory.getInstance(SensorFactory.Type.JSON);
+        jsonSensor.registerListener(this);
 
         Log.d("#### VV ####", "RESTClientActivity - onCreate()");
     }
@@ -70,6 +74,7 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
     public void onPause() {
         rawHttpSensor.unregisterListener(this);
         htmlSensor.unregisterListener(this);
+        jsonSensor.unregisterListener(this);
         super.onPause();
         Log.d("#### VV ####", "RESTClientActivity - onPause()");
     }
@@ -78,6 +83,7 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
     public void onResume() {
         rawHttpSensor.registerListener(this);
         htmlSensor.registerListener(this);
+        jsonSensor.registerListener(this);
         super.onResume();
         Log.d("#### VV ####", "RESTClientActivity - onResume()");
     }
@@ -85,6 +91,7 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
     public void onDestroy() {
         rawHttpSensor.unregisterListener(this);
         htmlSensor.unregisterListener(this);
+        jsonSensor.unregisterListener(this);
         super.onDestroy();
         Log.d("#### VV ####", "RESTClientActivity - onDestroy()");
     }
@@ -97,6 +104,11 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
     public void onClickTemperatureLib(View view) {
         htmlSensor.getTemperature();
         //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureLib()");
+    }
+
+    public void onClickTemperatureJson(View view) {
+        jsonSensor.getTemperature();
+        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureJson()");
     }
 
     @Override

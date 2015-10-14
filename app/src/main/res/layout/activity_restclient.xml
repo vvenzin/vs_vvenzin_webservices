@@ -11,7 +11,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Temperature RAW"
+        android:text="Get Temperature RAW (Slow)"
         android:id="@+id/get_temperature"
         android:layout_gravity="center_horizontal"
         android:onClick="onClickTemperatureRaw"
@@ -24,6 +24,15 @@
         android:id="@+id/get_temperature_lib"
         android:layout_gravity="center_horizontal"
         android:onClick="onClickTemperatureLib"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Temperature Json"
+        android:id="@+id/get_temperature_json"
+        android:layout_gravity="center_horizontal"
+        android:onClick="onClickTemperatureJson"
         />
 
     <TextView

@@ -16,10 +16,14 @@ public class HtmlSensor extends AbstractSensor {
     public double parseResponse(String response) {
         double temperature;
 
+        // Char array carrying the response
         char[] resp;
-        char[] temp = new char[5];
         resp = response.toCharArray();
 
+        // Char array carrying the temperature
+        char[] temp = new char[5];
+
+        // Hard coded: Copy temperature from resp to temp
         int i;
         for(i = 0; i < 5; i++) {
             if(!(resp[853 + i] == '<')) {
@@ -27,6 +31,7 @@ public class HtmlSensor extends AbstractSensor {
             }
         }
 
+        // Parsing the char array, if not successful set the temperature to Double.NaN
         try {
             temperature = Double.parseDouble(new String(temp));
         } catch (NumberFormatException nfe) {
@@ -39,9 +44,8 @@ public class HtmlSensor extends AbstractSensor {
 
     @Override
     public void getTemperature() throws NullPointerException {
-        // Build up a request to get a response with the temperature
-
-        HttpGet request = new HttpGet("http://" + RemoteServerConfiguration.HOST + ":8081" + "/sunspots/Spot1/sensors/temperature");
+        HttpGet request = new HttpGet("http://" + RemoteServerConfiguration.HOST
+                +":8081" + "/sunspots/Spot1/sensors/temperature");
 
         AsyncWorker worker = new AsyncWorker();
         worker.execute(request);
