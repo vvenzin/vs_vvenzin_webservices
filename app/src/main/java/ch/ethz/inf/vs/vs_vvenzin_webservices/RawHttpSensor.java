@@ -1,5 +1,7 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
+import android.util.Log;
+
 public class RawHttpSensor extends AbstractSensor {
 
     @Override
@@ -28,7 +30,7 @@ public class RawHttpSensor extends AbstractSensor {
         } catch (NumberFormatException nfe) {
              temperature = Double.NaN;
         }
-
+        Log.d("#### VV ####", "RESTClientActivity - ReturnRaw()");
         return  temperature;
     }
 

@@ -1,7 +1,9 @@
 package ch.ethz.inf.vs.vs_vvenzin_webservices;
 
+import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +26,8 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
 
         htmlSensor = new HtmlSensor();
         htmlSensor.registerListener(this);
+
+        Log.d("#### VV ####", "RESTClientActivity - onCreate()");
     }
 
     @Override
@@ -67,27 +71,37 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
         rawHttpSensor.unregisterListener(this);
         htmlSensor.unregisterListener(this);
         super.onPause();
+        Log.d("#### VV ####", "RESTClientActivity - onPause()");
     }
 
     @Override
     public void onResume() {
         rawHttpSensor.registerListener(this);
-        htmlSensor.unregisterListener(this);
+        htmlSensor.registerListener(this);
         super.onResume();
-
+        Log.d("#### VV ####", "RESTClientActivity - onResume()");
     }
 
     public void onDestroy() {
         rawHttpSensor.unregisterListener(this);
         htmlSensor.unregisterListener(this);
         super.onDestroy();
+        Log.d("#### VV ####", "RESTClientActivity - onDestroy()");
     }
 
     public void onClickTemperatureRaw(View view) {
         rawHttpSensor.getTemperature();
+        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureRaw()");
     }
 
     public void onClickTemperatureLib(View view) {
         htmlSensor.getTemperature();
+        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureLib()");
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration conf)
+    {
+        super.onConfigurationChanged(conf);
     }
 }

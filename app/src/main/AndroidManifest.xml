@@ -34,7 +34,8 @@
         <activity
             android:name=".RESTClientActivity"
             android:label="@string/title_activity_restclient"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:configChanges="keyboardHidden|keyboard|orientation" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ch.ethz.inf.vs.vs_vvenzin_webservices.MainActivity" />
