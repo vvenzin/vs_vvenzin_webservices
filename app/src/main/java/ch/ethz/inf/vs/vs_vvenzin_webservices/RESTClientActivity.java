@@ -98,17 +98,14 @@ public class RESTClientActivity extends AppCompatActivity implements SensorListe
 
     public void onClickTemperatureRaw(View view) {
         rawHttpSensor.getTemperature();
-        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureRaw()");
     }
 
     public void onClickTemperatureLib(View view) {
         htmlSensor.getTemperature();
-        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureLib()");
     }
 
     public void onClickTemperatureJson(View view) {
         jsonSensor.getTemperature();
-        //Log.d("#### VV ####", "RESTClientActivity - onClickTemperatureJson()");
     }
 
     @Override
