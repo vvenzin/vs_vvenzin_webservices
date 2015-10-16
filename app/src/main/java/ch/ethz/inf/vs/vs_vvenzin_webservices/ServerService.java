@@ -3,7 +3,10 @@ package ch.ethz.inf.vs.vs_vvenzin_webservices;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.SensorManager;
+import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,7 +17,6 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -26,14 +28,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class ServerService extends Service {
+
+public class ServerService extends Service implements HTMLFactoryListener {
 
     // CONSTANTS
     private final int PORT = 8088;
-    private final String PAGE_INDEX = "index";
-    private final String HTTP_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n";
+    //private final String PAGE_INDEX = "index";
+    //private final String HTTP_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n";
     private final String LOGTAG = "## VV-ServerService ##";
 
     private ServerSocket serverSocket;
@@ -41,6 +45,7 @@ public class ServerService extends Service {
     private String mAddress;
     private static boolean isRunning = false;
     private boolean serverIsRunning = false;
+    private HTMLFactory htmlFactory;
 
     /**
      * Message handling
@@ -89,6 +94,12 @@ public class ServerService extends Service {
     {
         super.onCreate();
         Log.d(LOGTAG, "onCreate()");
+        mAddress = getWlanInterface();
+
+        //get a list with all sensors
+        SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        List<Sensor> listSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        htmlFactory = new HTMLFactory(this,getApplicationContext(),listSensor,sensorManager);
 
         isRunning = true;
     }
@@ -108,7 +119,7 @@ public class ServerService extends Service {
 
         note.flags|=Notification.FLAG_NO_CLEAR;
 
-        startForeground(1337, note);
+        startForeground(1337, note); // We want our service to continue as long as possible
         return START_STICKY;
     }
 
@@ -136,6 +147,15 @@ public class ServerService extends Service {
      * SERVER
      */
 
+    private String requestedHTML = null;
+
+    @Override
+    public String getHostAddress()
+    {
+        if (mAddress != null) return "http://" + mAddress+ ":"+Integer.toString(PORT);
+        else return null;
+    }
+
     private Runnable thread = new Runnable()
     {
         @Override
@@ -143,7 +163,6 @@ public class ServerService extends Service {
         {
             try {
                 serverSocket = new ServerSocket(PORT);
-                mAddress = getWlanInterface();
                 Log.d(LOGTAG, "Address " + mAddress);
                 sendIpAndPort();
 
@@ -156,21 +175,39 @@ public class ServerService extends Service {
                     PrintWriter out = new PrintWriter(client.getOutputStream(), true);
                     BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-                    // Send Home page
-                    String page = fileReader(PAGE_INDEX);
-                    out.write(HTTP_RESPONSE + page);
-                    out.flush();
-                    out.close();
-
-                    // TODO: Parse request
+                    String request = "";
                     String line = in.readLine();
+                    request += line;
                     while (!line.isEmpty()) {
-                        Log.d(LOGTAG,line);
                         line = in.readLine();
+                        request += line;
                     }
 
-                    // TODO: React to request
+                    // Wait for HTML to arrive
+                    getHTML(parseGET(request));
+                    int waitfor = 50; // 50 seconds
+                    while (requestedHTML == null && waitfor > 0) {
+                        waitfor--;
+                        Log.d(LOGTAG, "Waiting for HTML");
+                        try {
+                            wait(100);
+                        } catch (InterruptedException e) {e.printStackTrace();}
+                    }
+                    if (waitfor == 0) {
+                        Log.d(LOGTAG, "Didnt get html");
+                        String rescue = htmlFactory.getRescueHTML(); // Request rescue html
+                        if (rescue != null) out.write(rescue);
+                        else {
+                            // Didnt get any html
+                            String notfound = "HTTP/1.1 404 Not Found\r\n\r\n";
+                            out.write(notfound);
+                        }
+                    } else  out.write(requestedHTML);
 
+                    requestedHTML = null;
+                    out.flush();
+                    out.close();
+                    in.close();
                 }
 
             } catch (IOException e) {e.printStackTrace();}
@@ -178,6 +215,7 @@ public class ServerService extends Service {
 
     };
 
+    // Returns ip address form wlan interface
     private String getWlanInterface()
     {
         NetworkInterface wlanInterface = null;
@@ -201,9 +239,10 @@ public class ServerService extends Service {
     }
 
 
-
     /**
+     *
      * Helper functions for server
+     *
      */
 
     private synchronized void startSopServer(boolean startStop)
@@ -236,44 +275,64 @@ public class ServerService extends Service {
         }
     }
 
-    // Returns content of html file as a string
-    public String fileReader(String fileName) {
 
-        InputStream file = getResources()
-                .openRawResource(getResources()
-                        .getIdentifier(fileName, "raw", getPackageName()));
-        StringBuilder text = new StringBuilder();
-        String NL = System.getProperty("line.separator");
-        Scanner scanner;
-        scanner = new Scanner(file);
-        while (scanner.hasNextLine()) {
-            text.append(scanner.nextLine() + NL);
-        }
-        return text.toString();
+    // Extract requested path from get request
+    private String parseGET(String request)
+    {
+        String parsed = "invalid";
+        String regex = "GET(.*)(HTTP.*)";
+        Pattern patt = Pattern.compile(regex);
+        Matcher matcher = patt.matcher(request);
+        if (matcher.matches()) parsed = matcher.group(1);
+        Log.d(LOGTAG,"Paresed following GET request " + parsed);
+        return parsed.substring(1,parsed.length()-1);
     }
 
-    // Reads bytestream from client and returns a string
-    private String readInput(InputStream is) {
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        try
-        {
-            String current;
-            String header = "";
-            while (!(current = in.readLine()).isEmpty())
-            {
-                header += current + System.getProperty("line.separator");
-            }
+    // Decide which html page we want based on the request then ask for it
+    private void getHTML(String request)
+    {
+        final String SENSOR = "/sensors";
+        final String ACTUATORS = "/actuators";
 
-            return header;
+        String regexSens = SENSOR + "/(.*)";
+        String regexAct = ACTUATORS + "/(.*)";
+        Pattern patt = Pattern.compile(regexSens);
+        Matcher matcher = patt.matcher(request);
+
+        // Home
+        if (request.equals("/")) {htmlFactory.getParentHTML();}
+
+        // Sensor - no sensor selected yet
+        if (request.equals(SENSOR)) {htmlFactory.getSensortHTML(null);}
+
+        // Sensor
+        if (matcher.matches()) {
+            String sensorName = matcher.group(1);
+            htmlFactory.getSensortHTML(sensorName);
         }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return null;
+
+        patt = Pattern.compile(regexAct);
+        matcher = patt.matcher(request);
+
+        // Actuator
+        if (request.equals(ACTUATORS)) {htmlFactory.getActuatorHTML(null,null);}
+        else if (matcher.matches()) {
+            String tmp = matcher.group(1);
+            String[] parts = tmp.split(Pattern.quote("?"));
+            if (parts.length == 1) htmlFactory.getActuatorHTML(parts[0],null); // No actuator selected
+            else htmlFactory.getActuatorHTML(parts[0],parts[1]); // Actuator selected
         }
     }
 
+
+    @Override
+    // This function gets called when a requested html file is ready.
+    public void onHTMLReady(String html)
+    {
+        Log.d(LOGTAG,"received HTML");
+        requestedHTML = html;
+    }
 
 
     /**
@@ -309,29 +368,6 @@ public class ServerService extends Service {
             } catch (RemoteException e) {e.printStackTrace();}
         }
     }
-
-    /* ONLY TEMPLATE fot sending messages
-    private void sendMessageToUI(int intvaluetosend) {
-        for (int i = mClients.size()-1; i >= 0; i--) {
-            try {
-                // Send data as an Integer
-                //mClients.get(i).send(Message.obtain(null, MSG_SET_INT_VALUE, intvaluetosend, 0));
-
-                //Send data as a String
-                Bundle b = new Bundle();
-                b.putString("str1", "ab" + intvaluetosend + "cd");
-                Message msg = Message.obtain(null, MSG_START_STOP_SERVER);
-                msg.setData(b);
-                mClients.get(i).send(msg);
-
-            }
-            catch (RemoteException e) {
-                // The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
-                mClients.remove(i);
-            }
-        }
-    }
-    */
 }
 
 

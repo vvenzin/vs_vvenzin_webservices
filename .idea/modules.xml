@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src0_82/src0_82.iml" filepath="$PROJECT_DIR$/src0_82/src0_82.iml" />
       <module fileurl="file://$PROJECT_DIR$/vs-vvenzin-webservices.iml" filepath="$PROJECT_DIR$/vs-vvenzin-webservices.iml" />
     </modules>
   </component>

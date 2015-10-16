@@ -179,30 +179,12 @@ public class RESTServerActivity extends AppCompatActivity {
             requestServerRunningStatus();
         }
 
-        public void onServiceDisconnected(ComponentName className) {
+        public void onServiceDisconnected(ComponentName className)
+        {
             Log.d(LOGTAG, "Service unexpectedly disconnected");
             mService = null;
         }
-    };
+        };
     }
-
-
-    /* TEMPLATE for sending messages
-    private void sendMessageToService(int intvaluetosend) {
-        if (mIsBound) {
-            if (mService != null) {
-
-                try {
-
-                    Message msg = Message.obtain(null, ServerService.MSG_SET_INT_VALUE, intvaluetosend, 0);
-                    msg.replyTo = mMessenger;
-                    mService.send(msg);
-                }
-                catch (RemoteException e) {
-                }
-            }
-        }
-    }
-    */
 
 }
