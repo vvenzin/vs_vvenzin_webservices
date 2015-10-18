@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 this.startActivity(i0);
                 break;
             case R.id.btn_task2:
+                Intent i1 = new Intent(this, SOAPClientActivity.class);
+                this.startActivity(i1);
                 break;
             case R.id.btn_task3:
                 Intent i2 = new Intent(getApplicationContext(), RESTServerActivity.class);

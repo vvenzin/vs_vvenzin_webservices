@@ -40,6 +40,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ch.ethz.inf.vs.vs_vvenzin_webservices.MainActivity" />
         </activity>
+        <activity
+            android:name=".SOAPClientActivity"
+            android:label="@string/title_activity_soapclient" >
+        </activity>
     </application>
 
 </manifest><!--
