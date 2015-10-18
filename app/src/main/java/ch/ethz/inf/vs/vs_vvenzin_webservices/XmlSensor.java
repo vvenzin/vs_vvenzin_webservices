@@ -17,20 +17,30 @@ public class XmlSensor extends AbstractSensor  {
 
     String NAMESPACE = "http://webservices.vslecture.vs.inf.ethz.ch/";
 
-    public double parseResponse(String response) {
+    public double parseResponse(String in) {
 
-    String stemerature = null;
+    String stemperature = null;
         try {
             XmlPullParser xp = new KXmlParser();
-            xp.setInput(new StringReader(response));
-            stemerature= xp.getAttributeValue(NAMESPACE, "temperature");
+            xp.setInput(new StringReader(in));
+            int eventType = xp.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT){
+                if(eventType == XmlPullParser.START_TAG){
+                    if(xp.getName().equals("temperature")){
+                        eventType=xp.next();
+                        stemperature= xp.getText();
+                        break;
+                    }
+                }
+                else eventType = xp.next();
+            }
 
 
         } catch (Exception e) {
             Log.e("###", "Error reading/parsing SOAP response", e);
             e.getStackTrace();
         }
-        double dtemperature = Double.parseDouble(stemerature);
+        double dtemperature = Double.parseDouble(stemperature);
         return dtemperature;
     }
 
