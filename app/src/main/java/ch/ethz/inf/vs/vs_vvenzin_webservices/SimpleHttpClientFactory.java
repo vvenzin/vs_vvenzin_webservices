@@ -7,12 +7,14 @@ public abstract class SimpleHttpClientFactory {
                 return new RawHttpClient();
             case LIB:
                 return new LibHttpClient();
+            case SOAP:
+                return new SOAPHttpClient();
             default:
                 return null;
         }
     }
 
     public enum Type {
-        RAW, LIB;
+        RAW, LIB, SOAP;
     }
 }

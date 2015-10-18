@@ -65,16 +65,21 @@ public abstract class AbstractSensor implements Sensor, ResponseParser {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            double value = parseResponse(result);
-            if (value != Double.NaN) {
-                for (SensorListener listener : listeners) {
-                    listener.onReceiveDouble(value);
+            try{
+                double value = parseResponse(result);
+                if (value != Double.NaN) {
+                    for (SensorListener listener : listeners) {
+                        listener.onReceiveDouble(value);
+                    }
+                } else {
+                    for (SensorListener listener : listeners) {
+                        listener.onReceiveString(result);
+                    }
                 }
-            } else {
-                for (SensorListener listener : listeners) {
-                    listener.onReceiveString(result);
-                }
+            } catch (Exception e){
+                e.printStackTrace();
             }
+
         }
     }
 }
