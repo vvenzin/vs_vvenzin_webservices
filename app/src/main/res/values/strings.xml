@@ -17,5 +17,6 @@
     <string name="title_activity_restclient">RESTClientActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_soapclient">SOAPClientActivity</string>
 
 </resources>
